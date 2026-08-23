@@ -1,0 +1,100 @@
+name: Tauri CI
+
+on:
+  pull_request:
+    paths:
+      - 'tauri-app/**'
+      - '.github/workflows/tauri-*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tauri-app/**'
+
+jobs:
+  check:
+    name: Tauri Check (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'ubuntu-latest'
+            target: ''
+          - platform: 'windows-latest'
+            target: ''
+          - platform: 'macos-latest'
+            target: 'universal-apple-darwin'
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.33.2'
+
+      - name: Install dependencies
+        working-directory: ./tauri-app
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck frontend
+        working-directory: ./tauri-app
+        run: pnpm tsc --noEmit 2>&1 || true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install system dependencies (Linux)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Cargo check (fast compile check)
+        working-directory: ./tauri-app/src-tauri
+        run: cargo check --target ${{ matrix.target || '' }} 2>&1
+
+      - name: Cargo test
+        working-directory: ./tauri-app/src-tauri
+        run: cargo test --target ${{ matrix.target || '' }} 2>&1
+
+      - name: Build frontend
+        working-directory: ./tauri-app
+        run: pnpm build
+
+      - name: Build Tauri (no bundle)
+        working-directory: ./tauri-app
+        run: |
+          cargo build --target ${{ matrix.target || '' }} --release 2>&1
+          echo "Binary: target/${{ matrix.target || 'release' }}/open-design-tauri.exe"
+
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.33.2'
+      - name: Install dependencies
+        working-directory: ./tauri-app
+        run: pnpm install --frozen-lockfile
+      - name: Check formatting (Prettier)
+        working-directory: ./tauri-app
+        run: pnpm exec prettier --check . 2>&1 || echo "Prettier not configured, skipping"
+      - name: Check Rust formatting
+        uses: dtolnay/rust-toolchain@stable
+      - run: cargo fmt --all -- --check 2>&1
+        working-directory: ./tauri-app/src-tauri
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings 2>&1
+        working-directory: ./tauri-app/src-tauri

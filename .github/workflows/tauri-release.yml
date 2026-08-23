@@ -1,0 +1,122 @@
+name: Tauri Release
+
+on:
+  push:
+    tags:
+      - 'tauri-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., tauri-v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release Tauri App
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target universal-apple-darwin'
+          - platform: 'ubuntu-latest'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.33.2'
+
+      - name: Install dependencies (frontend)
+        working-directory: ./tauri-app
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: ./tauri-app
+        run: pnpm build
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'x86_64-apple-darwin,aarch64-apple-darwin' || '' }}
+
+      - name: Install system dependencies (Linux)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install system dependencies (Windows)
+        if: matrix.platform == 'windows-latest'
+        run: |
+          # Rust/Windows SDK already available
+          echo "Windows dependencies satisfied"
+
+      - name: Install system dependencies (macOS)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          # Xcode command line tools already available
+          echo "macOS dependencies satisfied"
+
+      - name: Build and bundle Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: 'Open Design Tauri ${{ github.event.inputs.tag || github.ref_name }}'
+          releaseBody: |
+            See [CHANGELOG](https://github.com/nexu-io/open-design/blob/main/docs/CHANGELOG/v${{ github.event.inputs.tag || github.ref_name }}.md)
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  # Separate job for Windows MSIX (optional, for Store)
+  release-msix:
+    name: Release Tauri MSIX (Windows)
+    if: false  # Enable when ready for Microsoft Store
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.33.2'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        working-directory: ./tauri-app
+        run: pnpm install --frozen-lockfile
+      - name: Build frontend
+        working-directory: ./tauri-app
+        run: pnpm build
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+        with:
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: 'Open Design Tauri ${{ github.event.inputs.tag || github.ref_name }}'
+          releaseDraft: true
+          prerelease: false
+          args: '--target x86_64-pc-windows-msvc --msix'
