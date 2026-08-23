@@ -1,4 +1,5 @@
 import type { Response } from 'express';
+import type { SendApiError } from '../server-context.js';
 import {
   enforceVerifiedWorkspaceResourceMutation,
   enforceVerifiedWorkspaceResourceRead,
@@ -71,13 +72,7 @@ export function createAuthorizeProjectRequest(deps: {
    * shape because it lives on project metadata for restart-safe recovery.
    */
   isProjectRevoked?: (db: unknown, projectId: string) => boolean;
-  sendApiError: (
-    res: Response,
-    status: number,
-    code: string,
-    message: string,
-    details?: Record<string, unknown>,
-  ) => unknown;
+  sendApiError: SendApiError;
 }): AuthorizeProjectRequest {
   const {
     db,

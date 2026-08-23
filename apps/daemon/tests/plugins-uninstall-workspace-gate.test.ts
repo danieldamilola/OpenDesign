@@ -22,11 +22,17 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startServer } from '../src/server.js';
 import {
-  defaultRegistryRoots,
+  registryRootsForDataDir,
   resolvePluginFolder,
   upsertInstalledPlugin,
 } from '../src/plugins/registry.js';
 import { ensureWorkspaceResource, openDatabase, updateWorkspaceResource } from '../src/db.js';
+
+function testRegistryRoots() {
+  const dataDir = process.env.OD_DATA_DIR;
+  if (!dataDir) throw new Error('OD_DATA_DIR is required for plugin registry tests');
+  return registryRootsForDataDir(path.resolve(dataDir));
+}
 
 let server: http.Server;
 let baseUrl: string;
@@ -57,7 +63,7 @@ function workspaceHeaders(memberId: string, role: 'owner' | 'admin' | 'member', 
 }
 
 async function seedPluginFolder(pluginId: string): Promise<string> {
-  const pluginsRoot = defaultRegistryRoots().userPluginsRoot;
+  const pluginsRoot = testRegistryRoots().userPluginsRoot;
   const folder = path.join(pluginsRoot, pluginId);
   await mkdir(folder, { recursive: true });
   await writeFile(

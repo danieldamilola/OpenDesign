@@ -29,6 +29,7 @@ import {
 import type { WorkspaceDirectoryFetchResult } from '../../collab/vela-workspace-context.js';
 import type { PluginShareAction } from '../../services/plugin-share-tasks.js';
 import type { AuthorizeProjectRequest } from '../../collab/project-request-authority.js';
+import type { SendApiError } from '../../server-context.js';
 import { workspaceTeamPluginBindingResourceId } from '../../plugins/registry.js';
 import { localPluginRegistryScope } from '../../plugins/local-source.js';
 import {
@@ -53,7 +54,7 @@ function pluginUploadFailure(
 export interface RegisterPluginEventRoutesDeps {
   http: {
     requireLocalDaemonRequest: RequestHandler;
-    sendApiError: (res: Response, status: number, code: string, message: string) => unknown;
+    sendApiError: SendApiError;
   };
   verifyWorkspaceRequestAuthority?: VerifyWorkspaceRequestAuthority;
   plugins: {
@@ -182,7 +183,7 @@ interface PluginRouteHelpers {
   handleProjectInstallFolder(req: Request, res: Response): Promise<unknown>;
   handleProjectPluginCli(req: Request, res: Response, action: PluginShareAction): Promise<unknown>;
   getProject(db: SqliteDbLike, id: string): unknown;
-  sendApiError(res: Response, status: number, code: string, message: string): unknown;
+  sendApiError: SendApiError;
   isLocalSameOrigin(req: Request, port: number | null | undefined): boolean;
   handleCandidateDraft(req: Request, res: Response): Promise<unknown>;
   handleCandidateShareTask(req: Request, res: Response): Promise<unknown>;

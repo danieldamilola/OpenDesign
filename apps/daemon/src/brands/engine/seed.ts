@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SEED synthesis — the narrow front door of the brand engine.
  *
@@ -71,6 +70,7 @@ function normalizeHex(raw: string): string | null {
   const m = /^#?([0-9a-f]{3,8})$/.exec(v);
   if (!m) return null;
   let h = m[1];
+  if (!h) return null;
   if (h.length === 3 || h.length === 4) {
     h = h
       .slice(0, 3)

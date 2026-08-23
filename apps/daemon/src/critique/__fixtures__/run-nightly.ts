@@ -1,5 +1,5 @@
 /**
- * Prerelease conformance entrypoint (Phase 16).
+ * Nightly conformance entrypoint (Phase 16).
  *
  * The GitHub Actions workflow at `.github/workflows/critique-conformance.yml`
  * invokes this script once a day. It runs the conformance harness
@@ -30,12 +30,12 @@ import type { ConformanceDay } from '../ratchet.js';
 import { syntheticGoodStream } from './adapters/synthetic-good.js';
 import { syntheticBadStream } from './adapters/synthetic-bad.js';
 
-interface PrereleaseAdapter {
+interface NightlyAdapter {
   id: string;
   source: () => AsyncIterable<string>;
 }
 
-const ADAPTERS: readonly PrereleaseAdapter[] = [
+const ADAPTERS: readonly NightlyAdapter[] = [
   { id: 'synthetic-good', source: syntheticGoodStream },
   { id: 'synthetic-bad', source: syntheticBadStream },
 ];
@@ -55,10 +55,10 @@ function isoDay(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-async function runOne(adapter: PrereleaseAdapter, dataDir: string, date: string): Promise<void> {
+async function runOne(adapter: NightlyAdapter, dataDir: string, date: string): Promise<void> {
   const outcome = await runAdapterConformance({
     adapterId: adapter.id,
-    runId: `prerelease-${date}-${adapter.id}`,
+    runId: `nightly-${date}-${adapter.id}`,
     source: adapter.source(),
   });
   // shippedRate is 0 or 1 per single-run synthetic adapter; the
@@ -80,7 +80,7 @@ async function runOne(adapter: PrereleaseAdapter, dataDir: string, date: string)
   await appendConformanceDay(dataDir, row);
   // eslint-disable-next-line no-console
   console.log(
-    `[prerelease] ${adapter.id} ${outcome.kind}`
+    `[nightly] ${adapter.id} ${outcome.kind}`
       + (outcome.kind === 'degraded' || outcome.kind === 'failed'
         ? ` (${'reason' in outcome ? outcome.reason : outcome.cause})`
         : ''),
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
   const dataDir = resolveDataDir();
   const date = isoDay(new Date());
   // eslint-disable-next-line no-console
-  console.log(`[prerelease] writing to ${path.join(dataDir, 'conformance')} for ${date}`);
+  console.log(`[nightly] writing to ${path.join(dataDir, 'conformance')} for ${date}`);
   for (const adapter of ADAPTERS) {
     await runOne(adapter, dataDir, date);
   }
@@ -99,6 +99,6 @@ async function main(): Promise<void> {
 
 main().catch((err) => {
   // eslint-disable-next-line no-console
-  console.error('[prerelease] failed:', err instanceof Error ? err.message : String(err));
+  console.error('[nightly] failed:', err instanceof Error ? err.message : String(err));
   process.exit(1);
 });

@@ -979,6 +979,64 @@ async function checkWebImportIsolation(): Promise<boolean> {
   return true;
 }
 
+// AGENTS.md boundary rule: daemon business logic must not know about
+// sidecar/control-plane concepts. Sidecar awareness belongs in
+// `apps/daemon/src/sidecar/` (or the desktop sidecar entry wrapper). The
+// paths below are the sanctioned seams that existed when this ratchet
+// landed; treat every entry as debt to migrate, and never extend it with
+// new business modules.
+const daemonSidecarSanctionedPaths = new Set([
+  "apps/daemon/src/cli.ts",
+  "apps/daemon/src/daemon-url.ts",
+  "apps/daemon/src/deck-export.ts",
+  "apps/daemon/src/diagnostics-export.ts",
+  "apps/daemon/src/mcp-bootstrap.ts",
+  "apps/daemon/src/mcp-install-info.ts",
+  "apps/daemon/src/mcp-routes.ts",
+  "apps/daemon/src/pdf-export.ts",
+  "apps/daemon/src/routes/telemetry.ts",
+  "apps/daemon/src/server.ts",
+]);
+const daemonSidecarForbiddenPackages = ["@open-design/sidecar", "@open-design/sidecar-proto"];
+
+function collectDaemonSidecarIsolationViolationsFromSource(
+  repositoryPath: string,
+  source: string,
+): string[] {
+  const specifiers = collectImportSpecifiersFromSource(repositoryPath, source);
+  const violations: string[] = [];
+  for (const { specifier } of specifiers) {
+    if (daemonSidecarForbiddenPackages.some((packageName) => isPackageOrSubpath(specifier, packageName))) {
+      violations.push(`\`${specifier}\` -> daemon business modules must not import sidecar control-plane packages`);
+    }
+  }
+  return violations;
+}
+
+async function checkDaemonSidecarIsolation(): Promise<boolean> {
+  const sourceRoot = "apps/daemon/src";
+  const violations: string[] = [];
+
+  for (const repositoryPath of await collectRepositoryFiles(path.join(repoRoot, sourceRoot))) {
+    if (!repositoryPath.endsWith(".ts") && !repositoryPath.endsWith(".tsx")) continue;
+    if (isPathOrDescendant(repositoryPath, "apps/daemon/src/sidecar")) continue;
+    if (daemonSidecarSanctionedPaths.has(repositoryPath)) continue;
+    const source = await readFile(path.join(repoRoot, repositoryPath), "utf8");
+    for (const violation of collectDaemonSidecarIsolationViolationsFromSource(repositoryPath, source)) {
+      violations.push(`${repositoryPath}: ${violation}`);
+    }
+  }
+
+  if (violations.length > 0) {
+    console.error("Daemon sidecar isolation violations found:");
+    for (const violation of violations) console.error(`- ${violation}`);
+    return false;
+  }
+
+  console.log("Daemon sidecar isolation check passed: business modules stay free of sidecar imports.");
+  return true;
+}
+
 const toolsRootAllowlist = new Map<string, "directory" | "file">([
   // Keep top-level tools intentionally small. `tools/launcher` was an incoming
   // Windows shim experiment from PR #683 and is not an active repo boundary.
@@ -1356,6 +1414,7 @@ const checks: GuardCheck[] = [
   { name: "e2e layout", run: checkE2eLayout },
   { name: "web test layout", run: checkWebTestLayout },
   { name: "web import isolation", run: checkWebImportIsolation },
+  { name: "daemon sidecar isolation", run: checkDaemonSidecarIsolation },
   { name: "tools layout", run: checkToolsLayout },
   { name: "style policy", run: checkStylePolicy },
   { name: "CI topology", run: checkCiTopology },

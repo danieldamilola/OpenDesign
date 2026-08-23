@@ -11,10 +11,21 @@ export interface PublicComposioConfig {
   apiKeyTail: string;
 }
 
-let configFilePath = path.join(process.cwd(), '.od', 'connectors', 'composio-config.json');
+// Credential store lives under the resolved daemon data root; unset until
+// `configureComposioConfigStore(dataDir)` runs (see AGENTS.md data-dir contract).
+let configFilePath: string | undefined;
 
 export function configureComposioConfigStore(dataDir: string): void {
   configFilePath = path.join(dataDir, 'connectors', 'composio-config.json');
+}
+
+function requireConfigFilePath(): string {
+  if (!configFilePath) {
+    throw new Error(
+      'composio config store not configured: call configureComposioConfigStore(dataDir) with the resolved daemon data root',
+    );
+  }
+  return configFilePath;
 }
 
 export function readComposioConfig(): ComposioConfig {
@@ -74,7 +85,7 @@ export function deleteComposioAuthConfigId(connectorId: string): void {
 
 function readRawConfig(): unknown {
   try {
-    return JSON.parse(fs.readFileSync(configFilePath, 'utf8')) as unknown;
+    return JSON.parse(fs.readFileSync(requireConfigFilePath(), 'utf8')) as unknown;
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return {};
     throw error;
@@ -82,11 +93,12 @@ function readRawConfig(): unknown {
 }
 
 function writeRawConfig(config: ComposioConfig): void {
-  fs.mkdirSync(path.dirname(configFilePath), { recursive: true, mode: 0o700 });
-  const tempPath = `${configFilePath}.${process.pid}.${Date.now()}.tmp`;
+  const filePath = requireConfigFilePath();
+  fs.mkdirSync(path.dirname(filePath), { recursive: true, mode: 0o700 });
+  const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
   fs.writeFileSync(tempPath, `${JSON.stringify(config, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
-  fs.renameSync(tempPath, configFilePath);
-  fs.chmodSync(configFilePath, 0o600);
+  fs.renameSync(tempPath, filePath);
+  fs.chmodSync(filePath, 0o600);
 }
 
 function normalizeComposioConfig(value: unknown): ComposioConfig {

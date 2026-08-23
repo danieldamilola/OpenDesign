@@ -24,7 +24,6 @@ import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { x as tarExtract } from 'tar';
 import {
-  defaultRegistryRoots,
   deleteInstalledPlugin,
   getInstalledPlugin,
   resolvePluginFolder,
@@ -77,9 +76,11 @@ export type PluginInstallErrorCode =
 
 export interface InstallOptions {
   source: string;
-  // Forwarded from daemon runtime context; defaults to defaultRegistryRoots()
-  // so daemon tests can point at a sandboxed data root.
-  roots?: RegistryRoots;
+  // Required so every install lands under an explicitly resolved daemon data
+  // root. Production passes `PLUGIN_REGISTRY_ROOTS` (derived from
+  // RUNTIME_DATA_DIR); tests pass a sandboxed root. There is deliberately no
+  // env/cwd fallback here — see AGENTS.md "Daemon data directory contract".
+  roots: RegistryRoots;
   // 50 MiB default mirrors spec §7.2; tests pin a tighter cap.
   maxBytes?: number;
   // When true (the default), an existing install with the same id is
@@ -724,7 +725,7 @@ export async function* installFromLocalFolder(
   opts: InstallOptions & { _stagedFolder?: string; _stagedSourceKind?: PluginSourceKind },
 ): AsyncGenerator<InstallEvent, void, void> {
   const warnings: string[] = [];
-  const roots = opts.roots ?? defaultRegistryRoots();
+  const roots = opts.roots;
   // When called from the archive backend, the bytes are already on disk
   // under `_stagedFolder`; the public `source` field still records
   // provenance (github:owner/repo, https://example.com/foo.tgz, etc.).
@@ -877,7 +878,7 @@ export function isSafePluginId(id: string): boolean {
 export async function uninstallPlugin(
   db: SqliteDb,
   id: string,
-  roots: RegistryRoots = defaultRegistryRoots(),
+  roots: RegistryRoots,
 ): Promise<UninstallResult> {
   // A plugin id is a single safe folder name — never a path. Validate it
   // BEFORE it reaches `path.join(...) + rm -rf`, so an id carrying traversal

@@ -2110,51 +2110,7 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
         />
       ) : null}
 
-      {filteredExamplePlugins.length > 0 && activeChipId ? (
-        <PluginPromptPresets
-          chipId={activeChipId}
-          plugins={filteredExamplePlugins}
-          activePluginId={activePluginRecord?.id ?? null}
-          pendingPluginId={pendingPluginId}
-          locale={locale}
-          onPick={pickExamplePluginPreset}
-          pulseFirstPreset={guidePulseFirstPreset}
-          workspaceContext={workspaceContext}
-        />
-      ) : activePromptExamples.length > 0 ? (
-        <div
-          className="home-hero__prompt-examples"
-          data-testid="home-hero-prompt-examples"
-        >
-          <div className="home-hero__prompt-examples-title">
-            {t('homeHero.promptExamples')}
-          </div>
-          <div
-            className={`home-hero__prompt-examples-grid${activeChipId === 'web-clone' ? ' home-hero__prompt-examples-grid--sites' : ''}`}
-          >
-            {activePromptExamples.map((example, index) =>
-              webCloneExampleSite(example) ? (
-                <WebClonePromptExampleCard
-                  key={example}
-                  example={example}
-                  pulse={guidePulseFirstPreset && index === 0}
-                  onPick={usePromptExample}
-                />
-              ) : (
-                <button
-                  key={example}
-                  type="button"
-                  className={`home-hero__prompt-example${guidePulseFirstPreset && index === 0 ? ' home-hero__attention-sheen' : ''}`}
-                  data-testid="home-hero-prompt-example"
-                  onClick={() => usePromptExample(example)}
-                >
-                  <span>{example}</span>
-                </button>
-              ),
-            )}
-          </div>
-        </div>
-      ) : null}
+
 
       {error ? (
         <div role="alert" className="home-hero__error">

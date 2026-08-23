@@ -2,7 +2,7 @@
 
 Deploy Open Design to Microsoft Azure from the published runtime image — the
 same single Alpine image used by [`deploy/docker-compose.yml`](../docker-compose.yml)
-and the [Helm chart](../../charts/open-design). The daemon serves both the API
+and the [Helm chart](../../tools/pack/helm/open-design). The daemon serves both the API
 and the built web UI on one port, so there is no separate web container.
 
 > [!IMPORTANT]
@@ -15,7 +15,7 @@ and the built web UI on one port, so there is no separate web container.
 > data is reset on restart, redeploy, or scale.
 >
 > For durable self-hosting today, use [`deploy/docker-compose.yml`](../docker-compose.yml)
-> (named volume) or the [Helm chart](../../charts/open-design) (PVC with
+> (named volume) or the [Helm chart](../../tools/pack/helm/open-design) (PVC with
 > `ReadWriteOnce`). A durable Azure lane needs block storage (e.g. a VM with a
 > managed disk) and is out of scope here.
 

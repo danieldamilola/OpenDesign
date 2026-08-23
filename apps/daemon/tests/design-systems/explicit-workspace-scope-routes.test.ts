@@ -1,4 +1,5 @@
 import express from 'express';
+import { stubSseWriter } from '../helpers/sse-stub.js';
 import type http from 'node:http';
 import {
   existsSync,
@@ -155,14 +156,14 @@ async function startListRoute(input: {
         }
       : {}),
     http: {
-      createSseResponse: () => undefined,
+      createSseResponse: () => stubSseWriter(),
       getPublicBaseUrl: () => '',
       isLocalSameOrigin: () => true,
       requireLocalDaemonRequest: (_req: unknown, _res: unknown, next: () => void) => next(),
       resolvedPortRef: { current: 0 },
-      sendApiError: () => undefined,
-      sendLiveArtifactRouteError: () => undefined,
-      sendMulterError: () => undefined,
+      sendApiError: () => null as unknown as express.Response,
+      sendLiveArtifactRouteError: () => null as unknown as express.Response,
+      sendMulterError: () => null as unknown as express.Response,
     },
     paths: commonPaths(tempDir),
     resources: {
@@ -275,15 +276,15 @@ describe('design-system explicit Workspace request scope', () => {
         context: requestContext(req),
       }),
       http: {
-        createSseResponse: () => undefined,
+        createSseResponse: () => stubSseWriter(),
         getPublicBaseUrl: () => '',
         isLocalSameOrigin: () => true,
         requireLocalDaemonRequest: (_req: unknown, _res: unknown, next: () => void) => next(),
         resolvedPortRef: { current: 0 },
         sendApiError: (res: express.Response, status: number, code: string, message: string) =>
           res.status(status).json({ error: code, message }),
-        sendLiveArtifactRouteError: () => undefined,
-        sendMulterError: () => undefined,
+        sendLiveArtifactRouteError: () => null as unknown as express.Response,
+        sendMulterError: () => null as unknown as express.Response,
       },
       paths: routePaths,
       resources: {
@@ -377,15 +378,15 @@ describe('design-system explicit Workspace request scope', () => {
         }),
       }),
       http: {
-        createSseResponse: () => undefined,
+        createSseResponse: () => stubSseWriter(),
         getPublicBaseUrl: () => '',
         isLocalSameOrigin: () => true,
         requireLocalDaemonRequest: (_req: unknown, _res: unknown, next: () => void) => next(),
         resolvedPortRef: { current: 0 },
         sendApiError: (res: express.Response, status: number, code: string, message: string) =>
           res.status(status).json({ error: code, message }),
-        sendLiveArtifactRouteError: () => undefined,
-        sendMulterError: () => undefined,
+        sendLiveArtifactRouteError: () => null as unknown as express.Response,
+        sendMulterError: () => null as unknown as express.Response,
       },
       paths: routePaths,
       resources: {

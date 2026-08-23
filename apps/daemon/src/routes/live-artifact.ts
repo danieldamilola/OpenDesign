@@ -135,7 +135,7 @@ export function registerLiveArtifactRoutes(app: Express, ctx: RegisterLiveArtifa
       const { projectId, input, templateHtml, provenanceJson, createdByRunId } = req.body || {};
       if (requestProjectOverride(projectId, toolGrant.projectId)) {
         return sendApiError(res, 403, 'FORBIDDEN', 'projectId is derived from the tool token', {
-          details: { suppliedProjectId: projectId },
+          details: { suppliedProjectId: projectId ?? null },
         });
       }
       if (requestRunOverride(createdByRunId, toolGrant.runId)) {
@@ -171,7 +171,7 @@ export function registerLiveArtifactRoutes(app: Express, ctx: RegisterLiveArtifa
       const projectId = typeof req.query.projectId === 'string' ? req.query.projectId : undefined;
       if (requestProjectOverride(projectId, toolGrant.projectId)) {
         return sendApiError(res, 403, 'FORBIDDEN', 'projectId is derived from the tool token', {
-          details: { suppliedProjectId: projectId },
+          details: { suppliedProjectId: projectId ?? null },
         });
       }
       if (!await ctx.authorizeProjectToolRequest(
@@ -197,7 +197,7 @@ export function registerLiveArtifactRoutes(app: Express, ctx: RegisterLiveArtifa
       const { projectId, artifactId, input, templateHtml, provenanceJson } = req.body || {};
       if (requestProjectOverride(projectId, toolGrant.projectId)) {
         return sendApiError(res, 403, 'FORBIDDEN', 'projectId is derived from the tool token', {
-          details: { suppliedProjectId: projectId },
+          details: { suppliedProjectId: projectId ?? null },
         });
       }
       if (typeof artifactId !== 'string' || artifactId.length === 0) {
@@ -231,7 +231,7 @@ export function registerLiveArtifactRoutes(app: Express, ctx: RegisterLiveArtifa
       const { projectId, artifactId } = req.body || {};
       if (requestProjectOverride(projectId, toolGrant.projectId)) {
         return sendApiError(res, 403, 'FORBIDDEN', 'projectId is derived from the tool token', {
-          details: { suppliedProjectId: projectId },
+          details: { suppliedProjectId: projectId ?? null },
         });
       }
       if (typeof artifactId !== 'string' || artifactId.length === 0) {

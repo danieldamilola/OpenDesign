@@ -39,7 +39,18 @@ interface PersistedComposioCatalogCache {
   definitions: ConnectorCatalogDefinition[];
 }
 
-let composioCatalogCacheFilePath = path.join(process.cwd(), '.od', 'connectors', 'composio-catalog-cache.json');
+// Catalog cache lives under the resolved daemon data root; unset until
+// `configureCatalogCache(dataDir)` runs (see AGENTS.md data-dir contract).
+let composioCatalogCacheFilePath: string | undefined;
+
+function requireCatalogCacheFilePath(): string {
+  if (!composioCatalogCacheFilePath) {
+    throw new Error(
+      'composio catalog cache not configured: call configureCatalogCache(dataDir) with the resolved daemon data root',
+    );
+  }
+  return composioCatalogCacheFilePath;
+}
 
 const FEATURED_COMPOSIO_CATALOG: ConnectorCatalogDefinition[] = [
   {
@@ -597,7 +608,7 @@ export class ComposioConnectorProvider {
   }
 
   private loadPersistedCatalogCache(): void {
-    const parsed = readPersistedComposioCatalogCache(composioCatalogCacheFilePath);
+    const parsed = readPersistedComposioCatalogCache(requireCatalogCacheFilePath());
     if (!parsed) {
       this.persistedDefinitions = undefined;
       this.persistedFetchedAt = undefined;
@@ -612,7 +623,7 @@ export class ComposioConnectorProvider {
     this.persistedDefinitions = definitions.map((definition) => cloneConnectorDefinition(definition));
     this.persistedFetchedAt = fetchedAt;
     try {
-      writePersistedComposioCatalogCache(composioCatalogCacheFilePath, {
+      writePersistedComposioCatalogCache(requireCatalogCacheFilePath(), {
         schemaVersion: 1,
         fetchedAt,
         provider: 'composio',

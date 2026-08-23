@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { SendApiError } from '../../src/server-context.js';
 import {
   enforceVerifiedWorkspaceResourceMutation,
   enforceVerifiedWorkspaceResourceRead,
@@ -35,14 +36,17 @@ function spySendApiError() {
     message: string;
     details?: Record<string, unknown>;
   }> = [];
-  const sendApiError = (
-    _res: unknown,
-    status: number,
-    code: string,
-    message: string,
-    details?: Record<string, unknown>,
+  const sendApiError: SendApiError = (
+    _res,
+    status,
+    code,
+    message,
+    init,
   ) => {
+    const details = init as Record<string, unknown> | undefined;
     calls.push({ status, code, message, ...(details ? { details } : {}) });
+    // Route gates ignore the returned Response; tests assert on `calls`.
+    return undefined as never;
   };
   return { calls, sendApiError };
 }

@@ -15,6 +15,7 @@
 // headers, and deciding whether a caller may mutate a bound resource row.
 import type { WorkspaceCollabContext } from '@open-design/contracts';
 import type { Response } from 'express';
+import type { SendApiError } from '../server-context.js';
 
 export type WorkspaceResourceContext = {
   workspaceId: string;
@@ -520,13 +521,7 @@ function workspaceResourceMutationAllowed(
 export type BoundWorkspaceResourceMutationGate = (
   req: any,
   res: Response,
-  sendApiError: (
-    res: Response,
-    status: number,
-    code: string,
-    message: string,
-    details?: Record<string, unknown>,
-  ) => unknown,
+  sendApiError: SendApiError,
   getWorkspaceResource: (db: unknown, workspaceId: string, resourceId: string) => WorkspaceResourceAccessInput | null | undefined,
   getWorkspaceResourceByResourceId: (db: unknown, resourceId: string) => WorkspaceResourceAccessInput | null | undefined,
   db: unknown,
@@ -618,13 +613,7 @@ export async function enforceVerifiedWorkspaceResourceMutation(
   resourceType: string,
   req: any,
   res: Response,
-  sendApiError: (
-    res: Response,
-    status: number,
-    code: string,
-    message: string,
-    details?: Record<string, unknown>,
-  ) => unknown,
+  sendApiError: SendApiError,
   getWorkspaceResource: (
     db: unknown,
     workspaceId: string,
@@ -717,13 +706,7 @@ export async function enforceVerifiedWorkspaceResourceRead(
   resourceType: string,
   req: any,
   res: Response,
-  sendApiError: (
-    res: Response,
-    status: number,
-    code: string,
-    message: string,
-    details?: Record<string, unknown>,
-  ) => unknown,
+  sendApiError: SendApiError,
   getWorkspaceResource: (
     db: unknown,
     workspaceId: string,
@@ -854,7 +837,7 @@ export async function enforceVerifiedWorkspaceResourceRead(
 function headerlessMutationAllowed(
   resourceType: string,
   res: Response,
-  sendApiError: (res: Response, status: number, code: string, message: string) => unknown,
+  sendApiError: SendApiError,
   getWorkspaceResource: (db: unknown, workspaceId: string, resourceId: string) => WorkspaceResourceAccessInput | null | undefined,
   getWorkspaceResourceByResourceId: (db: unknown, resourceId: string) => WorkspaceResourceAccessInput | null | undefined,
   db: unknown,
@@ -896,7 +879,7 @@ export function enforceWorkspaceResourceMutation(
   resourceType: string,
   req: any,
   res: Response,
-  sendApiError: (res: Response, status: number, code: string, message: string) => unknown,
+  sendApiError: SendApiError,
   getWorkspaceResource: (db: unknown, workspaceId: string, resourceId: string) => WorkspaceResourceAccessInput | null | undefined,
   getWorkspaceResourceByResourceId: (db: unknown, resourceId: string) => WorkspaceResourceAccessInput | null | undefined,
   db: unknown,

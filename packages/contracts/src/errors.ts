@@ -138,6 +138,61 @@ export const API_ERROR_CODES = [
   // registered owner unshares the project, so clients must not render it as
   // a "try again later" error.
   'TEAM_PROJECT_OWNER_CONFLICT',
+  // Host-tool route failures: editor launch, terminal sessions, run
+  // identity/rating validation, Codex/MCP install probes, and plugin
+  // daemon-availability gating. Emitted by routes/chat.ts,
+  // routes/host-tools.ts, and mcp-routes.ts.
+  'INVALID_RUN_ID',
+  'INVALID_FEEDBACK_CONTEXT',
+  'INVALID_RATING',
+  'STREAM_ERROR',
+  'EDITOR_NOT_AVAILABLE',
+  'EDITOR_LAUNCH_FAILED',
+  'TERMINAL_NOT_FOUND',
+  'TERMINAL_SPAWN_FAILED',
+  'CODEX_PROBE_FAILED',
+  'CODEX_INSTALL_FAILED',
+  'CODEX_UNINSTALL_FAILED',
+  'INSTALL_INFO_INCOMPLETE',
+  'PLUGIN_REQUIRES_DAEMON',
+  'PLUGIN_NOT_FOUND',
+  // Workspace-scoped project management failures beyond the base
+  // WORKSPACE_* set: context requirement/conflict, access denial,
+  // directory materialization, team share/catalog surfaces, delete
+  // guards, linked-dir validation, design-system collisions, and
+  // preview scopes.
+  'WORKSPACE_CONTEXT_REQUIRED',
+  'WORKSPACE_CONTEXT_CONFLICT',
+  'WORKSPACE_ACCESS_DENIED',
+  'WORKSPACE_DIRECTORY_UNAVAILABLE',
+  'WORKSPACE_RESOURCE_ID_CONFLICT',
+  'WORKSPACE_RESOURCE_MANAGE_DENIED',
+  'WORKSPACE_TEAM_SHARE_REQUIRES_TEAM_WORKSPACE',
+  'TEAM_PROJECT_CATALOG_UNAVAILABLE',
+  'PROJECT_DELETE_FORBIDDEN',
+  'PROJECT_BATCH_CONTAINS_FORBIDDEN_ITEMS',
+  'PROJECT_UNSHARE_UNSUPPORTED',
+  'PROJECT_ALREADY_DESIGN_SYSTEM',
+  'PROJECT_DIR_MATERIALIZATION_FAILED',
+  'INVALID_LINKED_DIR',
+  'PREVIEW_SCOPE_NOT_FOUND',
+  'FILE_EXISTS',
+  'VERSION_NOT_FOUND',
+  // Library ingest / import-export / pairing failures
+  // (routes/library.ts, import-export-routes.ts).
+  'LIBRARY_INGEST_FORBIDDEN',
+  'INGEST_FETCH_FAILED',
+  'INGEST_FAILED',
+  'LIBRARY_SYNC_FAILED',
+  'APPLY_FAILED',
+  'NOT_HTML',
+  'EDIT_AS_PAGE_FAILED',
+  'PAIRING_FAILED',
+  'ARTIFACT_MANIFEST_REQUIRED',
+  'DESIGN_SYSTEM_ID_CONFLICT',
+  // Short-form internal failure code used by some legacy route paths;
+  // distinct from INTERNAL_ERROR until those call sites are unified.
+  'INTERNAL',
   'INTERNAL_ERROR',
 ] as const;
 

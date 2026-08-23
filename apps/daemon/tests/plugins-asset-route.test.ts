@@ -18,7 +18,13 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { startServer } from '../src/server.js';
 import { migratePlugins } from '../src/plugins/persistence.js';
-import { defaultRegistryRoots, upsertInstalledPlugin } from '../src/plugins/registry.js';
+import { upsertInstalledPlugin, registryRootsForDataDir } from '../src/plugins/registry.js';
+
+function testRegistryRoots() {
+  const dataDir = process.env.OD_DATA_DIR;
+  if (!dataDir) throw new Error('OD_DATA_DIR is required for plugin registry tests');
+  return registryRootsForDataDir(path.resolve(dataDir));
+}
 
 let server: http.Server;
 let baseUrl: string;
@@ -83,8 +89,8 @@ beforeAll(async () => {
   await mkdir(outsideDir, { recursive: true });
   await writeFile(secretPath, 'outside secret');
   await writeFile(path.join(outsideDir, 'nested-secret.txt'), 'nested outside secret');
-  const installedSurfacesDir = path.join(defaultRegistryRoots().userPluginsRoot, 'asset-plugin', 'surfaces');
-  const installedInternalDir = path.join(defaultRegistryRoots().userPluginsRoot, 'asset-plugin', 'internal-assets');
+  const installedSurfacesDir = path.join(testRegistryRoots().userPluginsRoot, 'asset-plugin', 'surfaces');
+  const installedInternalDir = path.join(testRegistryRoots().userPluginsRoot, 'asset-plugin', 'internal-assets');
   await mkdir(installedInternalDir, { recursive: true });
   await writeFile(path.join(installedInternalDir, 'nested-internal.txt'), 'nested internal secret');
   await symlink(
@@ -93,7 +99,7 @@ beforeAll(async () => {
   );
   await symlink(outsideDir, path.join(installedSurfacesDir, 'linked-outside'), 'dir');
   await symlink(installedInternalDir, path.join(installedSurfacesDir, 'linked-internal'), 'dir');
-  const installedRoot = path.join(defaultRegistryRoots().userPluginsRoot, 'asset-plugin');
+  const installedRoot = path.join(testRegistryRoots().userPluginsRoot, 'asset-plugin');
   await writeFile(
     path.join(installedRoot, 'SKILL.md'),
     '---\nname: asset-plugin\ndescription: Fixture skill description.\n---\n\n# Asset plugin\n',
@@ -109,7 +115,7 @@ afterAll(async () => {
   await fetch(`${baseUrl}/api/plugins/asset-plugin/uninstall`, { method: 'POST' }).catch(() => undefined);
   await Promise.resolve(shutdown?.());
   await new Promise<void>((resolve) => server.close(() => resolve()));
-  await rm(path.join(defaultRegistryRoots().userPluginsRoot, 'asset-plugin'), { recursive: true, force: true });
+  await rm(path.join(testRegistryRoots().userPluginsRoot, 'asset-plugin'), { recursive: true, force: true });
   await rm(pluginRoot, { recursive: true, force: true });
 });
 

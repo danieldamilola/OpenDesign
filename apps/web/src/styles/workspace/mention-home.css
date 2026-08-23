@@ -582,7 +582,7 @@
 .modal-rename .row button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
 }
 .modal-rename .row button.primary:disabled {
   opacity: 0.5;
@@ -635,7 +635,7 @@
 }
 .modal-confirm .row button.primary:disabled,
 .modal-confirm .row button.primary:disabled:hover {
-  background: #ededed;
+  background: var(--bg-subtle);
   border-color: transparent;
   color: #bdbdbd;
   cursor: not-allowed;
@@ -1821,7 +1821,7 @@
 .protocol-chip.active {
   background: var(--selected);
   border-color: color-mix(in srgb, var(--selected) 86%, var(--text-strong));
-  color: #fff;
+  color: var(--accent-contrast);
   font-weight: 600;
   box-shadow:
     0 0 0 3px var(--selected-soft),
@@ -1830,7 +1830,7 @@
 .protocol-chip.active:hover {
   background: color-mix(in srgb, var(--selected) 88%, var(--text-strong));
   border-color: color-mix(in srgb, var(--selected) 80%, var(--text-strong));
-  color: #fff;
+  color: var(--accent-contrast);
 }
 .protocol-chip .media-provider-chip-status {
   width: 6px;
@@ -2106,7 +2106,7 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
-  color: #fff;
+  color: var(--accent-contrast);
   box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 32%, transparent);
   flex-shrink: 0;
 }
@@ -2186,7 +2186,7 @@
   gap: 6px;
   padding: 7px 14px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
   font-size: 13px;
@@ -2215,7 +2215,7 @@
   border-color: transparent;
 }
 .orbit-run-cta .icon-spin {
-  color: #fff;
+  color: var(--accent-contrast);
 }
 
 @media (max-width: 620px) {
@@ -2429,7 +2429,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--bg);
   box-shadow: 0 1px 3px rgba(28, 27, 26, 0.22);
   transition: transform 180ms cubic-bezier(0.2, 0, 0.2, 1);
 }

@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import type { DesignSystemTokenContractRebuildJobResponse } from '@open-design/contracts';
 
 import { isLocalSameOrigin } from '../src/origin-validation.js';
+import { stubSseWriter } from './helpers/sse-stub.js';
 import { listDesignSystems } from '../src/design-systems/index.js';
 import { closeDatabase, openDatabase } from '../src/db.js';
 import { registerStaticResourceRoutes } from '../src/routes/static-resource.js';
@@ -29,7 +30,7 @@ describe('static resource mutation routes', () => {
           // before touching the skill workspace-mutation gate that reads it.
           db: {} as any,
           http: {
-            createSseResponse: () => undefined,
+            createSseResponse: () => stubSseWriter(),
             isLocalSameOrigin,
             requireLocalDaemonRequest: (_req: unknown, _res: unknown, next: () => void) => next(),
             resolvedPortRef: {
@@ -40,8 +41,8 @@ describe('static resource mutation routes', () => {
             },
             sendApiError: (res: express.Response, status: number, code: string, message: string) =>
               res.status(status).json({ error: message, code }),
-            sendLiveArtifactRouteError: () => undefined,
-            sendMulterError: () => undefined,
+            sendLiveArtifactRouteError: () => null as unknown as express.Response,
+            sendMulterError: () => null as unknown as express.Response,
           },
           paths: {
             ARTIFACTS_DIR: path.join(tempRoot, 'artifacts'),
@@ -201,7 +202,7 @@ describe('design system import catalog lookup', () => {
           // before touching the skill workspace-mutation gate that reads it.
           db,
           http: {
-            createSseResponse: () => undefined,
+            createSseResponse: () => stubSseWriter(),
             isLocalSameOrigin,
             requireLocalDaemonRequest: (_req: unknown, _res: unknown, next: () => void) => next(),
             resolvedPortRef: {
@@ -212,8 +213,8 @@ describe('design system import catalog lookup', () => {
             },
             sendApiError: (res: express.Response, status: number, code: string, message: string) =>
               res.status(status).json({ error: message, code }),
-            sendLiveArtifactRouteError: () => undefined,
-            sendMulterError: () => undefined,
+            sendLiveArtifactRouteError: () => null as unknown as express.Response,
+            sendMulterError: () => null as unknown as express.Response,
           },
           paths: {
             ARTIFACTS_DIR: path.join(tempRoot, 'artifacts'),

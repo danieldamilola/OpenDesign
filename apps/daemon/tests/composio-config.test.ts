@@ -192,11 +192,22 @@ describe('composio config', () => {
     }, null, 2));
 
     try {
+      // An unconfigured store must fail fast instead of silently resolving
+      // the legacy <cwd>/.od path (AGENTS.md daemon data-dir contract):
+      // credential reads/writes throw until they receive the resolved root.
       vi.resetModules();
-      const composioModule = await import('../src/connectors/composio.js');
+      const freshConfigModule = await import('../src/connectors/composio-config.js');
+      expect(() => freshConfigModule.readComposioConfig()).toThrow(
+        /composio config store not configured/,
+      );
+      expect(() => freshConfigModule.writeComposioConfig({ apiKey: '' })).toThrow(
+        /composio config store not configured/,
+      );
 
-      expect(composioModule.composioConnectorProvider.getFastDefinitions().find((definition) => definition.id === 'wrong-tenant')).toBeUndefined();
+      // The planted legacy-path cache stays untouched and never hydrates.
+      expect((await readFile(defaultCachePath, 'utf8'))).toContain('wrong-tenant');
 
+      // Once configured, only the resolved data root's cache hydrates.
       await mkdir(path.join(dir, 'connectors'), { recursive: true });
       await writeFile(path.join(dir, 'connectors', 'composio-catalog-cache.json'), JSON.stringify({
         schemaVersion: 1,
@@ -205,13 +216,15 @@ describe('composio config', () => {
         definitions: [composioDefinition('right-tenant')],
       }, null, 2));
 
-      composioModule.composioConnectorProvider.configureCatalogCache(dir);
+      composioConnectorProvider.configureCatalogCache(dir);
 
-      expect(composioModule.composioConnectorProvider.getFastDefinitions().find((definition) => definition.id === 'right-tenant')).toMatchObject({
+      expect(composioConnectorProvider.getFastDefinitions().find((definition) => definition.id === 'wrong-tenant')).toBeUndefined();
+      expect(composioConnectorProvider.getFastDefinitions().find((definition) => definition.id === 'right-tenant')).toMatchObject({
         id: 'right-tenant',
       });
     } finally {
       await rm(defaultCachePath, { force: true });
+      composioConnectorProvider.clearDiscoveryCache();
     }
   });
 

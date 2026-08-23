@@ -3,7 +3,7 @@ import type {
   PreviewComment,
   WorkspaceCollabContext,
 } from '@open-design/contracts';
-import type { RouteDeps } from '../../server-context.js';
+import type { RouteDeps, SendApiError } from '../../server-context.js';
 import type { BoundWorkspaceResourceMutationGate } from '../../collab/workspace-resource-mutation.js';
 import { isProjectCommentAnchorConversationId } from '../../db.js';
 
@@ -42,7 +42,7 @@ export interface RegisterProjectCommentRoutesDeps extends RouteDeps<'db' | 'proj
    */
   enforceWorkspaceProjectMutation?: BoundWorkspaceResourceMutationGate;
   /** Paired with `enforceWorkspaceProjectMutation` above — see that field. */
-  sendApiError?: (res: any, status: number, code: string, message: string) => unknown;
+  sendApiError?: SendApiError;
   /**
    * Resolve and authorize the PERSISTED project's Workspace scope. Production
    * wiring verifies request headers against the membership directory and then

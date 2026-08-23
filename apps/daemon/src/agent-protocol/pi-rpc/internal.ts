@@ -17,11 +17,12 @@ export type TokenUsage = {
   total_tokens?: number;
 };
 /**
- * Returns `true` when `value` is a non-null object, narrowing it to
- * `JsonRecord` for safe property access on RPC message payloads.
+ * Returns `true` when `value` is a non-null, non-array object, narrowing it
+ * to `JsonRecord` for safe property access on RPC message payloads. Arrays
+ * are rejected so the guard matches `JsonRecord`'s actual claim.
  */
 export function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null;
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 /**
  * Extracts a human-readable message string from an unknown thrown value;

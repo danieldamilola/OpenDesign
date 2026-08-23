@@ -517,13 +517,13 @@ export function registerLibraryRoutes(app: Express, ctx: RegisterLibraryRoutesDe
   });
 
   app.get('/api/library/assets/:id', (req, res) => {
-    const asset = getLibraryAsset(db, req.params.id);
+    const asset = getLibraryAsset(db, typeof req.params.id === 'string' ? req.params.id : '');
     if (!asset) return sendApiError(res, 404, 'NOT_FOUND', 'asset not found');
     res.json({ asset: toPublicAsset(asset) });
   });
 
   app.delete('/api/library/assets/:id', requireLocalDaemonRequest, async (req, res) => {
-    const asset = getLibraryAsset(db, req.params.id);
+    const asset = getLibraryAsset(db, typeof req.params.id === 'string' ? req.params.id : '');
     if (!asset) return sendApiError(res, 404, 'NOT_FOUND', 'asset not found');
     // Only unlink bytes we own and that live under LIBRARY_DIR.
     if (asset.storage === 'owned' && asset.filePath) {
@@ -538,7 +538,7 @@ export function registerLibraryRoutes(app: Express, ctx: RegisterLibraryRoutesDe
   });
 
   app.get('/api/library/assets/:id/raw', async (req, res) => {
-    const asset = getLibraryAsset(db, req.params.id);
+    const asset = getLibraryAsset(db, typeof req.params.id === 'string' ? req.params.id : '');
     if (!asset) return sendApiError(res, 404, 'NOT_FOUND', 'asset not found');
     const abs = resolveAssetBytesPath(asset, PROJECTS_DIR);
     if (!abs) return sendApiError(res, 404, 'NOT_FOUND', 'asset bytes not available');
@@ -561,7 +561,7 @@ export function registerLibraryRoutes(app: Express, ctx: RegisterLibraryRoutesDe
   // downloadable JSON, importable via the OD Figma plugin. Reads ride loopback
   // same-origin like /raw; the clipper downloads its own captures directly.
   app.get('/api/library/assets/:id/figma', async (req, res) => {
-    const asset = getLibraryAsset(db, req.params.id);
+    const asset = getLibraryAsset(db, typeof req.params.id === 'string' ? req.params.id : '');
     if (!asset) return sendApiError(res, 404, 'NOT_FOUND', 'asset not found');
     const sidecar = resolveAssetFigmaSidecarPath(asset, LIBRARY_DIR);
     if (!sidecar) return sendApiError(res, 404, 'NOT_FOUND', 'no figma capture for this asset');
@@ -584,7 +584,7 @@ export function registerLibraryRoutes(app: Express, ctx: RegisterLibraryRoutesDe
   // Serve the outerHTML sidecar of an element-pick screenshot. Read on demand
   // by the Library preview's "Element HTML" panel.
   app.get('/api/library/assets/:id/element', async (req, res) => {
-    const asset = getLibraryAsset(db, req.params.id);
+    const asset = getLibraryAsset(db, typeof req.params.id === 'string' ? req.params.id : '');
     if (!asset) return sendApiError(res, 404, 'NOT_FOUND', 'asset not found');
     const sidecar = resolveAssetElementSidecarPath(asset, LIBRARY_DIR);
     if (!sidecar) return sendApiError(res, 404, 'NOT_FOUND', 'no element markup for this asset');
@@ -605,7 +605,7 @@ export function registerLibraryRoutes(app: Express, ctx: RegisterLibraryRoutesDe
   // --- apply to project (web / Insert from Library) ------------------------
 
   app.post('/api/library/assets/:id/apply', requireLocalDaemonRequest, async (req, res) => {
-    const asset = getLibraryAsset(db, req.params.id);
+    const asset = getLibraryAsset(db, typeof req.params.id === 'string' ? req.params.id : '');
     if (!asset) return sendApiError(res, 404, 'NOT_FOUND', 'asset not found');
     const projectId = typeof req.body?.projectId === 'string' ? req.body.projectId : '';
     if (!projectId) return sendApiError(res, 400, 'BAD_REQUEST', 'projectId is required');
@@ -629,7 +629,7 @@ export function registerLibraryRoutes(app: Express, ctx: RegisterLibraryRoutesDe
   // user can edit it (srcDoc bridge + agent surgical edits) right away. This is
   // the clipper "capture → editable OD page" exit, driven from the Library.
   app.post('/api/library/assets/:id/edit-as-page', requireLocalDaemonRequest, async (req, res) => {
-    const asset = getLibraryAsset(db, req.params.id);
+    const asset = getLibraryAsset(db, typeof req.params.id === 'string' ? req.params.id : '');
     if (!asset) return sendApiError(res, 404, 'NOT_FOUND', 'asset not found');
     if (asset.kind !== 'html') {
       return sendApiError(res, 400, 'NOT_HTML', 'only html captures can be opened as an editable page');

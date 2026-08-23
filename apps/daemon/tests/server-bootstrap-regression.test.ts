@@ -14,6 +14,7 @@ import {
 import { isLocalSameOrigin } from '../src/origin-validation.js';
 import { registerDesignSystemRoutes } from '../src/routes/design-systems.js';
 import { registerStaticResourceRoutes } from '../src/routes/static-resource.js';
+import { stubSseWriter } from './helpers/sse-stub.js';
 
 let server: http.Server;
 let baseUrl: string;
@@ -387,7 +388,7 @@ describe('bootstrap route regressions', () => {
       USER_SKILLS_DIR: path.join(tempRoot, 'user-skills'),
     };
     const httpDeps = {
-      createSseResponse: () => undefined,
+      createSseResponse: () => stubSseWriter(),
       isLocalSameOrigin,
       requireLocalDaemonRequest: (_req: unknown, _res: unknown, next: () => void) => next(),
       resolvedPortRef: {
@@ -398,8 +399,8 @@ describe('bootstrap route regressions', () => {
       },
       sendApiError: (res: express.Response, status: number, code: string, message: string) =>
         res.status(status).json({ error: message, code }),
-      sendLiveArtifactRouteError: () => undefined,
-      sendMulterError: () => undefined,
+      sendLiveArtifactRouteError: () => null as unknown as express.Response,
+      sendMulterError: () => null as unknown as express.Response,
     };
     const designSystemSummary = {
       id: designSystemId,

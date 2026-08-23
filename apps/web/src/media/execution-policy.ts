@@ -13,7 +13,7 @@ export function mediaExecutionPolicyForProjectMetadata(
     return { mode: 'disabled' };
   }
   const allowedSurfaces = [metadata.kind];
-  const model = metadata.imageModel || metadata.videoModel || (metadata as any).audioModel;
+  const model = metadata.imageModel || metadata.videoModel || metadata.audioModel;
   return {
     mode: 'enabled',
     allowedSurfaces,

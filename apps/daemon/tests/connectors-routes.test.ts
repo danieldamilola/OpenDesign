@@ -190,13 +190,15 @@ function mockComposioFetch(options: MockComposioFetchOptions = {}): void {
 }
 
 beforeEach(async () => {
-  originalComposioConfig = readComposioConfig();
   lastComposioLinkRequest = undefined;
   lastComposioAuthConfigRequest = undefined;
   mockComposioFetch();
   const started = await startServer({ port: 0, returnServer: true }) as StartedServer;
   server = started.server;
   baseUrl = started.url;
+  // startServer configures the composio config store against the sandbox
+  // data root, so capture the pre-test config only after it is wired.
+  originalComposioConfig = readComposioConfig();
   await jsonFetch(`${baseUrl}/api/connectors/composio/config`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

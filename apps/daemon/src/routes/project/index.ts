@@ -57,7 +57,7 @@ import {
   type ResolveSnapshotOk,
 } from '../../plugins/index.js';
 import { connectorService } from '../../connectors/service.js';
-import type { RouteDeps } from '../../server-context.js';
+import type { RouteDeps, SendApiError } from '../../server-context.js';
 import { listSkills } from '../../skills.js';
 import { isSafeId } from '../../projects.js';
 import {
@@ -366,6 +366,16 @@ export function createWorkspaceProjectWriteAuthorityCheck(
   };
 }
 
+/**
+ * Regex-route handlers receive positional capture groups inside
+ * `req.params` under indexed keys, which Express's `ParamsDictionary`
+ * typing does not model. This is the single narrowing point for the
+ * wildcard routes registered by this file.
+ */
+function wildcardParams(req: { params: unknown }): { 0?: string; 1?: string } {
+  return req.params as { 0?: string; 1?: string };
+}
+
 export function createEnforceWorkspaceProjectMutation(
   verifyWorkspaceRequestAuthority?: VerifyWorkspaceRequestAuthority,
   verifyPersonalProjectDeleteLeaseAuthority?: VerifyWorkspaceRequestAuthority,
@@ -373,7 +383,7 @@ export function createEnforceWorkspaceProjectMutation(
   return async function enforceWorkspaceProjectMutation(
     req: any,
     res: Response,
-    sendApiError: (res: Response, status: number, code: string, message: string) => unknown,
+    sendApiError: SendApiError,
     getWorkspaceProject: (db: unknown, workspaceId: string, projectId: string) => WorkspaceProjectAccessInput | null | undefined,
     getWorkspaceProjectByProjectId: (db: unknown, projectId: string) => WorkspaceProjectAccessInput | null | undefined,
     db: unknown,
@@ -5813,7 +5823,7 @@ export function registerProjectFileRoutes(app: Express, ctx: RegisterProjectFile
   app.get(/^\/api\/projects\/([^/]+)\/text-preview\/(.+)$/u, async (req, res) => {
     let handle: import('fs/promises').FileHandle | null = null;
     try {
-      const params = req.params as unknown as { 0?: string; 1?: string };
+      const params = wildcardParams(req);
       const projectId = String(params[0] ?? '');
       const relPath = String(params[1] ?? '');
       if (rejectInternalVersionPath(res, relPath)) return;
@@ -5952,7 +5962,7 @@ export function registerProjectFileRoutes(app: Express, ctx: RegisterProjectFile
 
   app.get(/^\/api\/projects\/([^/]+)\/raw\/(.+)$/u, async (req, res) => {
     try {
-      const params = req.params as unknown as { 0?: string; 1?: string };
+      const params = wildcardParams(req);
       const projectId = String(params[0] ?? '');
       const relPath = String(params[1] ?? '');
       if (rejectInternalVersionPath(res, relPath)) return;
@@ -6074,7 +6084,7 @@ export function registerProjectFileRoutes(app: Express, ctx: RegisterProjectFile
   // decides when to route a preview here (see file-viewer-render-mode.ts).
   app.get(/^\/api\/projects\/([^/]+)\/powered\/(.+)$/u, async (req, res) => {
     try {
-      const params = req.params as unknown as { 0?: string; 1?: string };
+      const params = wildcardParams(req);
       const projectId = String(params[0] ?? '');
       const relPath = String(params[1] ?? '');
       if (rejectInternalVersionPath(res, relPath)) return;
@@ -6128,7 +6138,7 @@ export function registerProjectFileRoutes(app: Express, ctx: RegisterProjectFile
 
   app.delete(/^\/api\/projects\/([^/]+)\/raw\/(.+)$/u, async (req, res) => {
     try {
-      const params = req.params as unknown as { 0?: string; 1?: string };
+      const params = wildcardParams(req);
       const projectId = String(params[0] ?? '');
       const rawSplat = String(params[1] ?? '');
       if (rejectInternalVersionPath(res, rawSplat)) return;
@@ -6200,7 +6210,7 @@ export function registerProjectFileRoutes(app: Express, ctx: RegisterProjectFile
 
   app.get(/^\/api\/projects\/([^/]+)\/files\/(.+)\/versions$/u, async (req, res) => {
     try {
-      const params = req.params as unknown as { 0?: string; 1?: string };
+      const params = wildcardParams(req);
       const projectId = String(params[0] ?? '');
       const fileName = String(params[1] ?? '');
       if (rejectInternalVersionPath(res, fileName)) return;
@@ -6276,7 +6286,7 @@ export function registerProjectFileRoutes(app: Express, ctx: RegisterProjectFile
 
   app.post(/^\/api\/projects\/([^/]+)\/files\/(.+)\/versions$/u, async (req, res) => {
     try {
-      const params = req.params as unknown as { 0?: string; 1?: string };
+      const params = wildcardParams(req);
       const projectId = String(params[0] ?? '');
       const fileName = String(params[1] ?? '');
       if (rejectInternalVersionPath(res, fileName)) return;
@@ -6482,7 +6492,7 @@ export function registerProjectFileRoutes(app: Express, ctx: RegisterProjectFile
 
   app.get(/^\/api\/projects\/([^/]+)\/files\/(.+)$/u, async (req, res) => {
     try {
-      const params = req.params as unknown as { 0?: string; 1?: string };
+      const params = wildcardParams(req);
       const projectId = String(params[0] ?? '');
       const fileSplat = String(params[1] ?? '');
       if (rejectInternalVersionPath(res, fileSplat)) return;

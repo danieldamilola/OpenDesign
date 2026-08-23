@@ -2,7 +2,16 @@ export interface VelaWalletSnapshot {
   user?: { plan?: string | null } | null;
   account?: { plan?: string | null } | null;
 }
-const fetchVelaLoginStatus = async (...args: any[]) => null;
+
+/** Slice of the daemon's Vela login status this module reads. */
+interface VelaLoginStatusShape {
+  loggedIn?: boolean;
+  account?: VelaWalletSnapshot['account'];
+  user?: VelaWalletSnapshot['user'];
+}
+
+// Stub until the daemon-backed login-status fetch is wired here.
+const fetchVelaLoginStatus = async (..._args: unknown[]): Promise<VelaLoginStatusShape | null> => null;
 
 const PAID_VELA_PLANS = new Set(['plus', 'pro', 'max']);
 
@@ -23,7 +32,7 @@ export function isFreeVelaPlan(plan: string | null | undefined): boolean {
 export async function resolveVelaPlan(
   snapshot?: VelaWalletSnapshot | null,
 ): Promise<string | null> {
-  const status = (await fetchVelaLoginStatus().catch(() => null)) as any;
+  const status = await fetchVelaLoginStatus().catch(() => null);
   if (status?.loggedIn === true) {
     const accountPlan = normalizeVelaPlan(status.account?.plan);
     if (accountPlan) return accountPlan;

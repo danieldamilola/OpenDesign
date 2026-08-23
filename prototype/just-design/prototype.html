@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Just Design — prototype (throwaway)</title>
+<style>
+:root{ --bg:#fafaf9; --fg:#0a0a0a; --muted:#71717a; --line:#e7e5e4; --radius:14px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace; --sans: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+.top{position:sticky;top:0;z-index:10;background:rgba(250,250,249,.82);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:600;letter-spacing:-.02em}
+.brand i{width:22px;height:22px;background:var(--fg);color:var(--bg);display:grid;place-items:center;border-radius:6px;font-size:12px;font-family:var(--mono)}
+.badge{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:999px;background:white}
+.variant-bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#0a0a0a;color:white;border-radius:999px;padding:6px;display:flex;gap:6px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:50}
+.variant-bar button{appearance:none;border:0;background:transparent;color:#a1a1aa;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer}
+.variant-bar button.active{background:white;color:#0a0a0a}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 110px}
+.hint{color:var(--muted);font-size:13px;margin:6px 0 18px;line-height:1.5}
+.card{background:white;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.prompt-card{padding:18px}
+.prompt-card textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;font:inherit;font-size:15px;line-height:1.5;resize:none;outline:none;min-height:110px}
+.prompt-card textarea:focus{border-color:#0a0a0a}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.pill{border:1px solid var(--line);background:white;border-radius:999px;padding:6px 10px;font-size:13px;cursor:pointer}
+.pill.active{background:#0a0a0a;color:white;border-color:#0a0a0a}
+.preview{margin-top:16px;overflow:hidden}
+.preview-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);font-family:var(--mono)}
+.preview-body{padding:22px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.template{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fafaf9;cursor:pointer}
+.template.active{border-color:#0a0a0a;background:white;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;padding:2px 6px;border-radius:6px;background:white}
+.state{margin-top:16px;background:#0a0a0a;color:#e4e4e7;border-radius:12px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.6;overflow:auto;white-space:pre-wrap}
+.state b{color:white}
+.variant{display:none} .variant.active{display:block}
+.canvas-hero{text-align:center;padding:28px 0 8px}
+.canvas-hero h1{font-size:32px;letter-spacing:-.04em;margin:0}
+.canvas-hero p{color:var(--muted);margin:8px 0 0}
+.terminal{--tbg:#0a0a0a;background:#0a0a0a;color:#fafafa;border-radius:14px;overflow:hidden;border:1px solid #1f1f23}
+.terminal .bar{height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid #1f1f23;background:#111113}
+.dot{width:10px;height:10px;border-radius:999px}.dot.r{background:#ff5f56}.dot.y{background:#ffbd2e}.dot.g{background:#27c93f}
+.term-split{display:grid;grid-template-columns:1.1fr .9fr;min-height:420px}
+.term-stream{border-right:1px solid #1f1f23;padding:16px;font-family:var(--mono);font-size:13px;line-height:1.6;color:#d4d4d8}
+.term-preview{background:white;color:#0a0a0a}
+.tray{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:white}
+.tray-top{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--line)}
+.tray-top input{flex:1;border:0;outline:none;font:inherit;font-size:15px}
+.tray-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
+@media(max-width:900px){.grid3{grid-template-columns:1fr}.term-split{grid-template-columns:1fr}.tray-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand"><i>J</i> Just Design <span style="font-weight:400;color:#a1a1aa">— throwaway prototype</span></div>
+  <div class="badge">?v=canvas | terminal | tray — no persistence</div>
+</div>
+<div class="wrap">
+  <div class="hint">Three radically different directions for the same lightweight core: <b>prompt → template → preview</b>. References: Linear (whitespace), Claude Code (terminal), T3/Raycast (tray). No slop gradients. Question answered: <i>which shell makes "just design" feel instant?</i></div>
+
+  <div class="variant" data-variant="canvas">
+    <div class="canvas-hero"><h1>Turn your brief into a page.</h1><p>No chip rail. No marketplace. Just type.</p></div>
+    <div class="card prompt-card">
+      <textarea id="c-prompt" placeholder="A pricing page for a devtool, minimal, warm editorial…"></textarea>
+      <div class="row" id="c-pills"></div>
+      <div class="row"><span class="kbd">↵</span><span style="font-size:13px;color:#71717a">Run → streams to preview</span><button id="c-run" class="pill active" style="margin-left:auto">Run</button></div>
+    </div>
+    <div class="grid3" id="c-templates" style="margin-top:12px"></div>
+    <div class="card preview" style="margin-top:12px"><div class="preview-head"><span>preview — srcDoc (no reload flash)</span><span id="c-meta">ready</span></div><div class="preview-body" id="c-preview"></div></div>
+  </div>
+
+  <div class="variant" data-variant="terminal">
+    <div class="terminal">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span style="margin-left:8px;font-family:var(--mono);font-size:12px;color:#a1a1aa">od — Just Design</span><span style="margin-left:auto;font-size:12px;color:#52525b">dsh · claude · codex</span></div>
+      <div class="term-split">
+        <div class="term-stream">
+          <div style="color:#52525b">$ od generate --template <span id="t-tpl" style="color:#fafafa">web-prototype</span></div>
+          <textarea id="t-prompt" style="width:100%;background:transparent;border:0;color:#fafafa;outline:none;resize:none;min-height:90px;margin-top:10px;font:inherit" placeholder="Describe the page…"></textarea>
+          <div class="row" id="t-pills"></div>
+          <div style="margin-top:10px;color:#71717a">▸ streaming <span id="t-log">idle</span></div>
+          <button id="t-run" class="pill" style="background:#fafafa;color:#0a0a0a;margin-top:10px">Run ↵</button>
+        </div>
+        <div class="term-preview"><div class="preview-head"><span>preview</span><span id="t-meta">srcDoc</span></div><div class="preview-body" id="t-preview"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="variant" data-variant="tray">
+    <div class="tray">
+      <div class="tray-top"><span class="kbd">⌘K</span><input id="r-prompt" placeholder="Ask Just Design…"/><button id="r-run" class="pill active">Generate</button></div>
+      <div class="row" id="r-pills" style="padding:0 14px 6px"></div>
+      <div class="tray-grid" id="r-templates"></div>
+      <div style="padding:0 14px 14px"><div class="card preview"><div class="preview-head"><span>preview</span><span id="r-meta">—</span></div><div class="preview-body" id="r-preview"></div></div></div>
+    </div>
+  </div>
+
+  <div class="state" id="state"></div>
+  <div class="hint" style="margin-top:10px">Refs: Linear whitespace + Inter, Vercel monospace, Claude warm minimal. State is in-memory. Decision → <code>specs/current/just-design-strip-plan.md</code>. This file is throwaway: double-click to open, <code>?v=canvas</code> shares a variant.</div>
+</div>
+
+<div class="variant-bar" role="tablist"><button data-v="canvas">Canvas</button><button data-v="terminal">Terminal</button><button data-v="tray">Tray</button></div>
+
+<script>
+const templates = [
+  {id:"web-prototype", title:"Web prototype", desc:"Landing / hero", color:"#fef3c7"},
+  {id:"deck", title:"Deck", desc:"Pitch / update", color:"#dbeafe"},
+  {id:"mobile-app", title:"Mobile app", desc:"iPhone frame", color:"#dcfce7"},
+  {id:"dashboard", title:"Dashboard", desc:"KPIs", color:"#fae8ff"},
+];
+const state = { prompt: "A pricing page for Linear-style devtool, warm editorial, bento pricing", template: "web-prototype", previewHtml: "" };
+function renderPreview(){
+  const p = (state.prompt||"Your brief will appear as a real page.").slice(0,140);
+  const col = (templates.find(t=>t.id===state.template)||templates[0]).color;
+  state.previewHtml = '<div style="border:1px solid #e7e5e4;border-radius:12px;overflow:hidden"><div style="height:6px;background:'+col+'"></div><div style="padding:22px"><div style="font-size:11px;letter-spacing:.12em;color:#71717a;font-family:var(--mono);text-transform:uppercase">'+state.template+' · preview</div><h2 style="margin:10px 0 8px;font-size:22px;letter-spacing:-.03em">'+p+'</h2><div style="height:120px;border:1px dashed #e7e5e4;border-radius:10px;display:grid;place-items:center;color:#a1a1aa;font-size:13px">Styled by DESIGN.md · real HTML</div></div></div>';
+  document.querySelectorAll('[id$=preview]').forEach(el=> el.innerHTML = state.previewHtml);
+  document.querySelectorAll('[id$=meta]').forEach(el=> el.textContent = state.template + " · " + new Date().toLocaleTimeString());
+  document.querySelectorAll('[id$=tpl]').forEach(el=> el.textContent = state.template);
+  document.getElementById('state').textContent = 'state prompt: '+JSON.stringify(state.prompt)+'\ntemplate: '+state.template+'  preview: '+state.previewHtml.length+' chars · '+templates.length+' templates · lightweight core only';
+}
+function mountPills(id){
+  const c=document.getElementById(id); if(!c) return; c.innerHTML="";
+  templates.forEach(t=>{
+    const b=document.createElement('button'); b.className='pill'+(state.template===t.id?' active':''); b.textContent=t.title;
+    b.onclick=()=>{ state.template=t.id; sync(); renderPreview(); }; c.appendChild(b);
+  });
+}
+function renderGrid(id){
+  const g=document.getElementById(id); if(!g) return; g.innerHTML="";
+  templates.forEach(t=>{
+    const d=document.createElement('div'); d.className='template'+(state.template===t.id?' active':'');
+    d.innerHTML='<div style="width:28px;height:28px;border-radius:8px;background:'+t.color+';border:1px solid #e7e5e4"></div><div style="margin-top:8px;font-weight:600;font-size:13px">'+t.title+'</div><div style="color:#71717a;font-size:12px">'+t.desc+'</div>';
+    d.onclick=()=>{ state.template=t.id; sync(); renderPreview(); }; g.appendChild(d);
+  });
+}
+function sync(){ mountPills('c-pills'); mountPills('t-pills'); mountPills('r-pills'); renderGrid('c-templates'); renderGrid('r-templates'); }
+const variants=['canvas','terminal','tray'];
+function curV(){ const v=new URLSearchParams(location.search).get('v'); return variants.includes(v)?v:'canvas'; }
+function setV(v){
+  const u=new URL(location.href); u.searchParams.set('v',v); history.replaceState(null,'',u);
+  document.querySelectorAll('.variant').forEach(el=> el.classList.toggle('active', el.dataset.variant===v));
+  document.querySelectorAll('.variant-bar button').forEach(b=> b.classList.toggle('active', b.dataset.v===v));
+}
+document.querySelectorAll('.variant-bar button').forEach(b=> b.onclick=()=> setV(b.dataset.v));
+['c-prompt','t-prompt','r-prompt'].forEach(id=>{
+  const el=document.getElementById(id); if(!el) return; el.value=state.prompt;
+  el.addEventListener('input', e=>{ state.prompt=e.target.value; document.querySelectorAll('#c-prompt,#t-prompt,#r-prompt').forEach(o=>{ if(o!==e.target) o.value=state.prompt; }); renderPreview(); });
+});
+document.getElementById('c-run')?.addEventListener('click', ()=>{ const l=document.getElementById('t-log'); if(l) l.textContent='streaming…'; setTimeout(()=>{ if(l) l.textContent='done'; },600); renderPreview(); });
+document.getElementById('t-run')?.addEventListener('click', ()=>{ const l=document.getElementById('t-log'); if(l) l.textContent='streaming…'; setTimeout(()=>{ if(l) l.textContent='done'; },600); renderPreview(); });
+document.getElementById('r-run')?.addEventListener('click', renderPreview);
+setV(curV()); sync(); renderPreview();
+</script>
+</body>
+</html>

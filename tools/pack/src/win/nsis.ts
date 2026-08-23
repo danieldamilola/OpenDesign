@@ -176,18 +176,26 @@ export async function ensureNsisPersianLanguageAlias(config: ToolPackConfig): Pr
       const persianNlf = join(languageDir, "Persian.nlf");
       const persianNsh = join(languageDir, "Persian.nsh");
       if ((await pathExists(farsiNlf)) && !(await pathExists(persianNlf))) {
-        await cp(farsiNlf, persianNlf);
-        updatedLanguageDir = true;
-        updated = true;
+        try {
+          await cp(farsiNlf, persianNlf);
+          updatedLanguageDir = true;
+          updated = true;
+        } catch (err: any) {
+          if (err?.code !== "EPERM") throw err;
+        }
       }
       if (await pathExists(farsiNsh)) {
         const farsiMessages = await readFile(farsiNsh, "utf8");
         const persianMessages = farsiMessages.replace('LANGFILE "Farsi"', 'LANGFILE "Persian"');
         const existingPersianMessages = await readFile(persianNsh, "utf8").catch(() => null);
         if (existingPersianMessages !== persianMessages) {
-          await writeFile(persianNsh, persianMessages, "utf8");
-          updatedLanguageDir = true;
-          updated = true;
+          try {
+            await writeFile(persianNsh, persianMessages, "utf8");
+            updatedLanguageDir = true;
+            updated = true;
+          } catch (err: any) {
+            if (err?.code !== "EPERM") throw err;
+          }
         }
       }
       if (updatedLanguageDir) {

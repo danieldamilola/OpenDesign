@@ -1,4 +1,5 @@
 import express from 'express';
+import { stubSseWriter } from './helpers/sse-stub.js';
 import type http from 'node:http';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -133,7 +134,7 @@ async function fixture() {
       };
     },
     http: {
-      createSseResponse: () => undefined,
+      createSseResponse: () => stubSseWriter(),
       getPublicBaseUrl: () => '',
       isLocalSameOrigin: () => true,
       requireLocalDaemonRequest: (_req: unknown, _res: unknown, next: () => void) =>
@@ -151,8 +152,8 @@ async function fixture() {
           message,
           ...(options?.retryable ? { retryable: true } : {}),
         }),
-      sendLiveArtifactRouteError: () => undefined,
-      sendMulterError: () => undefined,
+      sendLiveArtifactRouteError: () => null as unknown as express.Response,
+      sendMulterError: () => null as unknown as express.Response,
     },
     paths,
     resources: {

@@ -1132,7 +1132,7 @@
   height: 520px;
   border: 0;
   display: block;
-  background: #fff;
+  background: var(--bg);
 }
 
 .dsTokens {
@@ -1243,7 +1243,7 @@
   transform: scale(0.5);
   transform-origin: top left;
   pointer-events: none;
-  background: #fff;
+  background: var(--bg);
 }
 
 .assetMeta {
@@ -1351,7 +1351,7 @@
   width: min(1180px, 94vw);
   height: min(820px, 88vh);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-panel);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
@@ -1412,7 +1412,7 @@
   width: 100%;
   min-height: 0;
   border: 0;
-  background: #fff;
+  background: var(--bg);
 }
 
 .designMdModalPanel {
@@ -1619,7 +1619,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #fff;
+  background: var(--bg);
 }
 
 .coverFrame {
@@ -1627,7 +1627,7 @@
   height: 142.857%;
   border: 0;
   display: block;
-  background: #fff;
+  background: var(--bg);
   pointer-events: none;
   transform: scale(0.7);
   transform-origin: top left;

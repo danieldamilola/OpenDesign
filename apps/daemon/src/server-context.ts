@@ -1,23 +1,56 @@
-import type { Express } from 'express';
+import type { Express, NextFunction, Request, Response } from 'express';
+import type { ApiError, ApiErrorResponse } from '@open-design/contracts';
 import type { SkillInfo } from './skills.js';
 import type { DesignSystemSummary } from './design-systems/index.js';
 import type { RoutineRoutesService } from './routes/routine.js';
 import type { OpenDesignPublicMetadataService } from './services/open-design-public-metadata.js';
 import type { ResourceHubPrincipal } from './collab/resource-principal.js';
+import type { RequestWithOriginHeaders } from './origin-validation.js';
 import type {
   AuthorizeProjectRequest,
   AuthorizeProjectToolRequest,
 } from './collab/project-request-authority.js';
 
+/** SSE writer returned by {@link HttpDeps.createSseResponse}. */
+export interface SseResponseWriter {
+  send(event: string, data: unknown, id?: string | number | null): boolean;
+  writeKeepAlive(): boolean;
+  cleanup(): void;
+  end(): void;
+}
+
+/**
+ * The route-level error emitter shared through {@link HttpDeps}.
+ *
+ * `code` is `string` on purpose: several workspace gates mint codes
+ * dynamically (`` `WORKSPACE_${resourceType.toUpperCase()}_PERMISSION_DENIED` ``,
+ * `WORKSPACE_LOCKED`), so the seam must accept free-form codes. Recognized
+ * codes are declared by `API_ERROR_CODES` in `packages/contracts`; the web
+ * client validates incoming codes against that union and degrades unknown
+ * ones to a generic failure. Keep new static codes in the contract union.
+ */
+export type SendApiError = (
+  res: Response,
+  status: number,
+  code: string,
+  message: string,
+  init?: Omit<ApiError, 'code' | 'message'>,
+) => Response<ApiErrorResponse>;
+
 export interface HttpDeps {
-  createSseResponse: (...args: any[]) => any;
-  getPublicBaseUrl?: (...args: any[]) => string;
-  isLocalSameOrigin: (...args: any[]) => boolean;
-  requireLocalDaemonRequest: (...args: any[]) => any;
+  createSseResponse(res: Response, options?: { keepAliveIntervalMs?: number }): SseResponseWriter;
+  getPublicBaseUrl?(req: Request): string;
+  isLocalSameOrigin(
+    req: RequestWithOriginHeaders,
+    port: number | string | null | undefined,
+    env?: NodeJS.ProcessEnv,
+  ): boolean;
+  requireLocalDaemonRequest(req: Request, res: Response, next: NextFunction): void | Response;
+  sendApiError: SendApiError;
+  sendLiveArtifactRouteError(res: Response, err: unknown): Response;
+  sendMulterError(res: Response, err: unknown): Response<ApiErrorResponse>;
+  /** Live resolved daemon port; read late so startup retries stay visible. */
   resolvedPortRef: { current: number };
-  sendApiError: (...args: any[]) => any;
-  sendLiveArtifactRouteError: (...args: any[]) => any;
-  sendMulterError: (...args: any[]) => any;
 }
 
 export interface PathDeps {

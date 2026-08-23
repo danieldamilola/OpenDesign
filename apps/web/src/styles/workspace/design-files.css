@@ -1236,7 +1236,7 @@ button.df-card-thumb:focus:not(:disabled) {
   width: 100%;
   height: 100%;
   border: none;
-  background: #fff;
+  background: var(--bg);
   display: block;
   pointer-events: none;
 }

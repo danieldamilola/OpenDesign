@@ -2,7 +2,7 @@ import type { Express } from 'express';
 import { type ChatSessionMode } from '@open-design/contracts';
 import { readAnalyticsContext } from '../../analytics.js';
 import { backfillBrandExtractionTranscriptForProject } from '../../brands/index.js';
-import type { RouteDeps } from '../../server-context.js';
+import type { RouteDeps, SendApiError } from '../../server-context.js';
 import type { BoundWorkspaceResourceMutationGate } from '../../collab/workspace-resource-mutation.js';
 import type { AuthorizeProjectRequest } from '../../collab/project-request-authority.js';
 import { TERMINAL_RUN_STATUSES } from '../../runtimes/runs.js';
@@ -33,7 +33,7 @@ export interface RegisterProjectConversationRoutesDeps extends RouteDeps<'db' | 
    * fixtures that only exercise comment CRUD semantics, not workspace
    * isolation, are not forced to stub unrelated HTTP helpers.
    */
-  sendApiError?: (res: any, status: number, code: string, message: string) => unknown;
+  sendApiError?: SendApiError;
 }
 
 function normalizeChatSessionMode(value: unknown): ChatSessionMode {

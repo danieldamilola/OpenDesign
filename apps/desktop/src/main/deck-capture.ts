@@ -9,6 +9,17 @@ import type { DesktopRenderSlidesInput, DesktopRenderSlidesResult } from "@open-
 
 import { waitForPrintableContent } from "./pdf-export.js";
 
+/** Globals injected into the throwaway deck-render window. */
+interface DeckCaptureInjectedWindow {
+  domToPptx?: { exportToPptx: (target: unknown, options: unknown) => Promise<Blob> };
+}
+
+/** Inline design-extent hints stamped on a slide stage element. */
+interface StageWithDesignExtent {
+  designWidth?: unknown;
+  designHeight?: unknown;
+}
+
 // Vendored dom-to-pptx browser UMD (apps/desktop/vendor/dom-to-pptx). Loaded
 // once and injected into the render window for editable PPTX export. The packaged
 // app ships it via electron-builder `extraResources` next to the app under
@@ -1160,9 +1171,7 @@ export async function runDomToPptx(slideSelector: string): Promise<{ b64?: strin
   }
 
   try {
-    const w = window as unknown as {
-      domToPptx?: { exportToPptx: (target: unknown, options: unknown) => Promise<Blob> };
-    };
+    const w = window as DeckCaptureInjectedWindow;
     if (!w.domToPptx || typeof w.domToPptx.exportToPptx !== "function") {
       return { error: "dom-to-pptx engine did not load" };
     }
@@ -1269,8 +1278,8 @@ function measureSlide(slideSelector: string, stageSelector: string): { w: number
   }
   function deckStageAuthoredSize(stage: HTMLElement): { w: number; h: number } | null {
     const byProp = sizePair(
-      (stage as unknown as { designWidth?: unknown }).designWidth,
-      (stage as unknown as { designHeight?: unknown }).designHeight,
+      (stage as StageWithDesignExtent).designWidth,
+      (stage as StageWithDesignExtent).designHeight,
     );
     if (byProp) return byProp;
     const byAttr = sizePair(stage.getAttribute("width"), stage.getAttribute("height"));
@@ -1351,8 +1360,8 @@ export function measureAuthoredSlideBox(el: HTMLElement): { w: number; h: number
 
 function deckStageAuthoredSize(stage: HTMLElement): { w: number; h: number } | null {
   const byProp = sizePair(
-    (stage as unknown as { designWidth?: unknown }).designWidth,
-    (stage as unknown as { designHeight?: unknown }).designHeight,
+    (stage as StageWithDesignExtent).designWidth,
+    (stage as StageWithDesignExtent).designHeight,
   );
   if (byProp) return byProp;
   const byAttr = sizePair(stage.getAttribute("width"), stage.getAttribute("height"));
