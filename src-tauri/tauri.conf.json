@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Open Design",
+  "version": "0.1.0",
+  "identifier": "ai.opendesign.tauri",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Just Design",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "RWQV5NiOkBzh9AKnyd8gzs41p0gRYmBLNT5UYnWFO9FR/vorO/Wr6ih4",
+      "endpoints": [
+        "https://releases.open-design.ai/tauri/{{target}}/{{current_version}}"
+      ],
+      "dialog": true
+    }
+  }
+}
