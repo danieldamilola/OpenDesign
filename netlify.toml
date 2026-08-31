@@ -1,0 +1,3 @@
+[build]
+  command = "OD_WEB_OUTPUT_MODE= pnpm --filter @open-design/web build"
+  publish = "apps/web/out"
