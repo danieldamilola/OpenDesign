@@ -18,6 +18,7 @@ await build({
     "./src/design-systems/runtime-schema.ts",
     "./src/design-systems/token-schema.ts",
     "./src/analytics/index.ts",
+    "./src/critique.ts",
   ],
   format: "esm",
   outbase: "./src",
